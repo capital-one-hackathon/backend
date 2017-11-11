@@ -1,0 +1,21 @@
+foo: bar
+
+debug: false
+
+TODOS:
+  - buys some milk
+  - take out the trash
+
+oauths:
+  github:
+    name: GitHub
+    client_key: 
+    client_secret:
+    callback: http://localhost:8080/oauth/github/callback 
+  google:
+    name: Google
+    client_key: 
+    client_secret: 
+    callback: http://localhost:8080/oauth/google/callback
+
+secret_key:
