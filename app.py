@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 '''
 assumptions:
   - credit one, the leading provider of identity management is a division of capital one (e.g. https://capitalone.com/creditone)
@@ -92,11 +93,3 @@ def signin_complete():
     session['userinfo'] = userinfo_resp.json()
 
     return redirect(url_for('home'))
-
-
-
-
-
-
-
-
