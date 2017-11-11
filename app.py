@@ -107,6 +107,3 @@ def api_userinfo():
         return jsonify(), 401
     return jsonify(session.get('userinfo'))
 
-
-
-
