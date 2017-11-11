@@ -33,7 +33,7 @@ from flask import Flask, flash, jsonify, render_template, redirect, request, ses
 from requests_oauthlib import OAuth2Session
 
 
-app = Flask(__name__, static_folder='./templates/compiled', template_folder="./templates", instance_relative_config=True)
+app = Flask(__name__, static_folder='./templates/', template_folder="./templates", instance_relative_config=True)
 
 # load default config and secrets
 app.config.from_object('config')
@@ -55,7 +55,7 @@ def create_oauth():
 # ----------------------
 @app.route('/')
 def home():
-    return render_template('index.html')
+    return render_template('home.html')
 
 
 @app.route('/signin/complete')

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Credit One</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
+    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
+  </head>
+  <body onload="fetchSignInUrl()">
+    <header id="show-user-info">Hello</header>
+    <a id="sign-up-btn" style="display: hidden; visibility: none;" href="">Sign Up</a>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script type="text/javascript">
+      function fetchSignInUrl(){
+        $.ajax({
+          method: "GET",
+          url: 'api/userinfo',
+          success: function(data){
+            if(data.signin_url){
+              localStorage.setItem('signin_url', data.signin_url);
+              $("#sign-up-btn").css('display', 'block');
+              $("#sign-up-btn").css('visibility', 'visible');
+              $("#sign-up-btn").attr('href', localStorage.getItem('signin_url'));
+            }
+          }
+        })
+      }
+
+      function signupOauth(uri){
+        $.ajax({
+          method: "GET",
+          url: uri,
+          success: function(data){
+            console.log("INIT OAUTH: ", data);
+            // $("#show-user-info").append("<h1>" + data.userinfo + "</h1>");
+          }
+        })
+      }
+    </script>
+  </body>
+</html>
