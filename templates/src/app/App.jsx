@@ -8,7 +8,8 @@ class App extends Component {
       oauthUrl: "",
       firstName: "",
       lastName: "",
-      authenticated: false
+      authenticated: false,
+      grabbedCapitalOneURL: false
     };
 
     this.initiateOauth = this.initiateOauth.bind(this);
@@ -26,7 +27,8 @@ class App extends Component {
         } else if(response.data.signin_url){
           console.log("SIGNINURL IS: ", response.data.signin_url);
           this.setState({
-            oauthUrl: response.data.signin_url
+            oauthUrl: response.data.signin_url,
+            grabbedCapitalOneURL: true
           });
         }
       })
@@ -36,7 +38,7 @@ class App extends Component {
 
 
   render(){
-    return this.state.authenticated === false ? (
+    return this.state.grabbedCapitalOneURL === false ? (
       <div>
         <h1 className="welcome">Hello From The App Component</h1>
         <button onClick={(e) => {e.preventDefault(); this.initiateOauth()}}>Signin With Capital One</button>
@@ -44,7 +46,7 @@ class App extends Component {
     ) :
     (
       <div>
-        <h1>Hello, {this.state.firstName} {this.state.lastName}</h1>
+        <button><a href={this.state.oauthUrl}>Sigin With Capital One</a></button>
       </div>
     )
   }
