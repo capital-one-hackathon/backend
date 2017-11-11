@@ -1,14 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <title>Credit One</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/latest/css/bootstrap.min.css">
-    <link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='main.css') }}">
-  </head>
-  <body>
-    <script src="compiled/bundle.js" type="text/javascript"></script>
-  </body>
-</html>
+{% if not session.userinfo %}
+  <a href="{{auth_url}}">signin with capital one</a>
+{% else %}
+  <a href="/api/signout">signout</a>
+  <table>
+    <tr>
+      <td width="50%" valign="top">
+  <!--
+        {u'filterFields': {},
+        u'scopes': [u'signup'],
+        u'referenceId': u't.225b244911d947bc82d3de5c91cdb04e',
+        u'referenceIdName': u'profileReferenceId',
+        u'resourceDetails': {
+          u'dateOfBirth': u'1982-05-19',
+          u'fullName': u'REGGIE JOHNSON',
+          u'email': u'reggie.johnson@youremail.com',
+          u'phone': u'6084480341',
+          u'address': {
+            u'postalCode': u'129629791',
+            u'city': u'MORRISONVILLE',
+            u'stateCode': u'NY',
+            u'countryCode': u'US',
+            u'addressLine1': u'15 KIMBERLY LN'}}}
+  -->
+  <h1>{{ session.userinfo.resourceDetails.fullName }}</h1>
+  {{session.userinfo}}
+    </td>
+    <td valign="top">
+      <h1>Vault</h1>
+    </td>
+  </tr>
+</table>
+  <p>
+
+{% endif %}
