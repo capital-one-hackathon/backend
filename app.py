@@ -33,6 +33,8 @@ questions:
 
 '''
 import os
+import requests
+import json
 
 from flask import Flask, flash, jsonify, render_template, redirect, request, session, url_for
 from requests_oauthlib import OAuth2Session
@@ -60,7 +62,25 @@ def create_oauth():
 # ----------------------
 @app.route('/')
 def home():
-    return render_template('index.html')
+    if 'userinfo' not in session:
+        # start oauth dance
+        oauth_session = create_oauth()
+        authorization_url, oauth_state = oauth_session.authorization_url(app.config['OAUTH_DEVEX_AUTHORIZE_URL'])
+        session[SESSKEY_DEXEX_STATE] = oauth_state
+        # users leaves our site to capital one
+        return render_template('home.html', auth_url=authorization_url)
+    else:
+        return render_template('home.html')
+
+
+@app.route('/vault')
+def vault():
+
+
+@app.route('/api/signout')
+def signout():
+    session.clear()
+    return redirect(url_for('home'))
 
 
 @app.route('/signin/complete')
@@ -83,9 +103,46 @@ def signin_complete():
         session['access_token'] = oauth_token
 
     userinfo_resp = oauth_session.get('http://api.devexhacks.com/oauth2/userinfo')
-    session['userinfo'] = userinfo_resp.json()
+    session['userinfo'] = userinfo_resp.json()['claims']['identity'][0]
 
+    payload = {
+        "ownerIdInSourceSystem": "abc123",
+        "ownerDetails": {
+            "phoneNumber": "8005551212",
+            "email": "cap@devex.com",
+            "individual": {
+                "firstName": "foo",
+                "lastName": "bar"
+            }
+
+        }
+    }
+
+    vault_token_resp = requests.post('https://api.devexhacks.com/oauth2/token',
+        headers={
+            'Accept': 'application/json',
+            'Content-Type': 'application/x-www-form-urlencoded'},
+        data={
+            'client_id': 'vgw3sf4f8nq3b98i1gdfr8wpx4gpty0ska52',
+            'client_secret': 'eb5f6rda6v0d1ld8y4fymkudo86gorrc47cj',
+            'grant_type': 'client_credentials'
+        })
+
+    vault_token = vault_token_resp.json()['access_token']
+    print('vault_token=' + vault_token)
+
+    vault_resp = requests.post('http://api.devexhacks.com/vault/owner/match',
+        headers={'Accept': 'application/json;v=0',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + vault_token},
+        data=json.dumps(payload))
+
+    print(vault_resp.json())
     return redirect(url_for('home'))
+
+
+
+
 
 
 # ----------------------
