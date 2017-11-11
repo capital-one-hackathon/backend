@@ -68,14 +68,14 @@ def home():
         authorization_url, oauth_state = oauth_session.authorization_url(app.config['OAUTH_DEVEX_AUTHORIZE_URL'])
         session[SESSKEY_DEXEX_STATE] = oauth_state
         # users leaves our site to capital one
-        return render_template('home.html', auth_url=authorization_url)
+        return render_template('index.html', auth_url=authorization_url)
     else:
-        return render_template('home.html')
+        return render_template('index.html')
 
 
 @app.route('/vault')
 def vault():
-
+    return render_template('vault.html')
 
 @app.route('/api/signout')
 def signout():
