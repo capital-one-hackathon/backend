@@ -5,8 +5,6 @@ assumptions:
   - participating banks, institutions, ... realize credit one the leading
     provider of identity management
   - all third parties below, are authorized (they have client id/secret) partners with credit one
-
-
 scenarios:
   - student wants to open account at bank a
     - bank a doesn't want to collect information manually from user
@@ -16,7 +14,6 @@ scenarios:
       - user logs in and approves
       - user is redirected back to partner site w/ personal info
     - bank a uses personal info to create account
-
   - student wants to open account at bank b
     - bank b will collect person information from each user, but does not
       have the capacity to handle due diligence to verify user
@@ -26,11 +23,9 @@ scenarios:
       - bank b gets salt to hash information on it's end before sending to capital one
       - bank b then sends user info to be verified
     - verification is passed, bank b creates account for user
-
 questions:
   - for scope of this hackathon, do we say we are the devex api or are we the proxy between
   a partner site and the devex api
-
 '''
 import os
 
@@ -38,7 +33,7 @@ from flask import Flask, flash, jsonify, render_template, redirect, request, ses
 from requests_oauthlib import OAuth2Session
 
 
-app = Flask(__name__, static_folder='static', instance_relative_config=True)
+app = Flask(__name__, static_folder='./templates/compiled', template_folder="./templates", instance_relative_config=True)
 
 # load default config and secrets
 app.config.from_object('config')
@@ -61,16 +56,6 @@ def create_oauth():
 @app.route('/')
 def home():
     return render_template('index.html')
-
-
-@app.route('/signin')
-def signin():
-    # start oauth dance
-    oauth_session = create_oauth()
-    authorization_url, oauth_state = oauth_session.authorization_url(app.config['OAUTH_DEVEX_AUTHORIZE_URL'])
-    session[SESSKEY_DEXEX_STATE] = oauth_state
-    # users leaves our site to capital one
-    return redirect(authorization_url)
 
 
 @app.route('/signin/complete')
@@ -104,6 +89,10 @@ def signin_complete():
 @app.route('/api/userinfo')
 def api_userinfo():
     if 'userinfo' not in session:
-        return jsonify(), 401
+        # start oauth dance
+        oauth_session = create_oauth()
+        authorization_url, oauth_state = oauth_session.authorization_url(app.config['OAUTH_DEVEX_AUTHORIZE_URL'])
+        session[SESSKEY_DEXEX_STATE] = oauth_state
+        # users leaves our site to capital one
+        return jsonify({'signin_url': authorization_url})
     return jsonify(session.get('userinfo'))
-
