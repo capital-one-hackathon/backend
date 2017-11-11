@@ -34,7 +34,7 @@ questions:
 '''
 import os
 
-from flask import Flask, flash, render_template, redirect, request, session, url_for
+from flask import Flask, flash, jsonify, render_template, redirect, request, session, url_for
 from requests_oauthlib import OAuth2Session
 
 
@@ -55,29 +55,33 @@ def create_oauth():
         redirect_uri=app.config['OAUTH_DEVEX_SIGNIN_REDIRECT'])
 
 
+# ----------------------
+# web routes
+# ----------------------
 @app.route('/')
 def home():
-    if 'userinfo' not in session:
-        return render_template('signin.html')
-    else:
-        return render_template('home.html')
+    return render_template('home.html')
 
 
 @app.route('/signin')
 def signin():
+    # start oauth dance
     oauth_session = create_oauth()
     authorization_url, oauth_state = oauth_session.authorization_url(app.config['OAUTH_DEVEX_AUTHORIZE_URL'])
     session[SESSKEY_DEXEX_STATE] = oauth_state
+    # users leaves our site to capital one
     return redirect(authorization_url)
 
 
 @app.route('/signin/complete')
 def signin_complete():
+    # make sure no csrf
     if not SESSKEY_DEXEX_STATE in session or \
             not all(k in request.args for k in ('code', 'state')) or \
             request.args['state'] != session.get(SESSKEY_DEXEX_STATE):
         return abort(401)
 
+    # start our oauth
     oauth_session = create_oauth()
     oauth_token = oauth_session.fetch_token(app.config['OAUTH_DEVEX_ACCESS_TOKEN_URL'],
         client_secret=app.config['OAUTH_DEVEX_SECRET'],
@@ -92,6 +96,20 @@ def signin_complete():
     session['userinfo'] = userinfo_resp.json()
 
     return redirect(url_for('home'))
+
+
+# ----------------------
+# api routes
+# ----------------------
+@app.route('/api/userinfo')
+def api_userinfo():
+    if 'userinfo' not in session:
+        return jsonify(), 401
+    return jsonify(session.get('userinfo'))
+
+
+
+
 
 
 
