@@ -33,7 +33,6 @@ questions:
 
 '''
 import os
-import requests
 
 from flask import Flask, flash, render_template, redirect, request, session, url_for
 from requests_oauthlib import OAuth2Session
@@ -46,26 +45,28 @@ app.config.from_object('config')
 app.config.from_pyfile('config.py') # instance/config.py
 os.environ['OAUTHLIB_INSECURE_TRANSPORT']='1' # for testing, we use non-HTTPS
 
+# state for csrf
 SESSKEY_DEXEX_STATE='devex'
 
 def create_oauth():
     return OAuth2Session(app.config['OAUTH_DEVEX_ID'],
-        scope=['openid','signin'],
+        scope=['openid', 'signup'],
         state=(session.get(SESSKEY_DEXEX_STATE) if SESSKEY_DEXEX_STATE in session else None),
-        redirect_uri='http://localhost:5000/signin/complete')
+        redirect_uri=app.config['OAUTH_DEVEX_SIGNIN_REDIRECT'])
 
 
 @app.route('/')
 def home():
-    if 'user' not in session:
+    if 'userinfo' not in session:
         return render_template('signin.html')
     else:
         return render_template('home.html')
 
+
 @app.route('/signin')
 def signin():
     oauth_session = create_oauth()
-    authorization_url, oauth_state = oauth_session.authorization_url('http://api.devexhacks.com/oauth2/authorize')
+    authorization_url, oauth_state = oauth_session.authorization_url(app.config['OAUTH_DEVEX_AUTHORIZE_URL'])
     session[SESSKEY_DEXEX_STATE] = oauth_state
     return redirect(authorization_url)
 
@@ -78,29 +79,17 @@ def signin_complete():
         return abort(401)
 
     oauth_session = create_oauth()
-    oauth_token = oauth_session.fetch_token('http://api.devexhacks.com/oauth2/token',
+    oauth_token = oauth_session.fetch_token(app.config['OAUTH_DEVEX_ACCESS_TOKEN_URL'],
         client_secret=app.config['OAUTH_DEVEX_SECRET'],
         authorization_response=request.url)
 
     if 'access_token' not in oauth_token:
         return abort(401)
     else:
-        session['user'] = {
-            'access_token': oauth_token
-        }
+        session['access_token'] = oauth_token
 
-    print('----- token---')
-    print('Bearer ' + oauth_token['access_token'])
-    print('-------')
-
-    headers = {
-        'Authorization': 'Bearer eyJlbmMiOiJBMTI4Q0JDLUhTMjU2IiwicGNrIjoxLCJhbGciOiJkaXIiLCJ0diI6Miwia2lkIjoiYTdxIn0..Q8EPUTo189PyagVaeXKw9XgvYN1pEz5Vgp1bgF4Hj9TE2anFkmGILcf7UX9iO6L0cUTgJQm3blatkUZUyUKc6cHFyyuVPKmtZDIU2zmP6VEhxmroUfeqh8YJnOEw9LRVKU1Pq4fVRuZMsIM1Mf6F2oMOAFL8JTw7AK4CQVUWtti4KHaNBtDX9cHOuwRtDbKhQbmySLP0g5ENzrC9gWMLprmq66hX5bI4TAiF2f7KlgjtT9lvph9pLyDsfBhtOanWj6gVmYMqxcNQlUHcgtsH3nlthX1PsOKQppDtmS09hPELzTxEn2kxk2btJ0KPy2iQFQyDSWfER1xgJnFDASr1sg8MNeQh3Qjmp4vuruQMimu1IFVvb1cIsIDS7cWPCUPa2UFYz9YfW1uXVnUpOyZTCWZ3E28YL70Rn2TbP4Hw030rgBWF5Ok1YD51e7BWJXXCq1lIWUG85WmjWZ5Il4nVNZBxBFDPR7lQMG2Gw36ibffzfTDwwHfWhlpkmbqtRLawKEVtYNDcpIvocujQJFHlwCRJ9uex5BXJzQQ6Mrp1cvxp3sp65mU5EPSU4J1OK0Iuj8Yv.I3YRuEIDtnqtHjjjrb9OK0C',
-        'Accept': 'application/json'}
-    userinfo_resp = requests.get('http://api.devexhacks.com/oauth2/userinfo', headers=headers)
-
-    print('------------')
-    print(userinfo_resp)
-    print('------------')
+    userinfo_resp = oauth_session.get('http://api.devexhacks.com/oauth2/userinfo')
+    session['userinfo'] = userinfo_resp.json()
 
     return redirect(url_for('home'))
 
