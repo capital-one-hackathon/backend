@@ -63,16 +63,6 @@ def home():
     return render_template('index.html')
 
 
-@app.route('/signin')
-def signin():
-    # start oauth dance
-    oauth_session = create_oauth()
-    authorization_url, oauth_state = oauth_session.authorization_url(app.config['OAUTH_DEVEX_AUTHORIZE_URL'])
-    session[SESSKEY_DEXEX_STATE] = oauth_state
-    # users leaves our site to capital one
-    return redirect(authorization_url)
-
-
 @app.route('/signin/complete')
 def signin_complete():
     # make sure no csrf
@@ -104,6 +94,11 @@ def signin_complete():
 @app.route('/api/userinfo')
 def api_userinfo():
     if 'userinfo' not in session:
-        return jsonify(), 401
+        # start oauth dance
+        oauth_session = create_oauth()
+        authorization_url, oauth_state = oauth_session.authorization_url(app.config['OAUTH_DEVEX_AUTHORIZE_URL'])
+        session[SESSKEY_DEXEX_STATE] = oauth_state
+        # users leaves our site to capital one
+        return jsonify({'signin_url': authorization_url}), 401
     return jsonify(session.get('userinfo'))
 
