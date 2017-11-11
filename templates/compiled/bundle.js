@@ -61,7 +61,7 @@
 /******/ 	
 /******/ 	
 /******/ 	var hotApplyOnUpdate = true;
-/******/ 	var hotCurrentHash = "a86d90cb57af59d16770"; // eslint-disable-line no-unused-vars
+/******/ 	var hotCurrentHash = "43c9e1c5d858729786c3"; // eslint-disable-line no-unused-vars
 /******/ 	var hotRequestTimeout = 10000;
 /******/ 	var hotCurrentModuleData = {};
 /******/ 	var hotCurrentChildModule; // eslint-disable-line no-unused-vars
@@ -32415,7 +32415,8 @@ var App = function (_Component) {
       oauthUrl: "",
       firstName: "",
       lastName: "",
-      authenticated: false
+      authenticated: false,
+      grabbedCapitalOneURL: false
     };
 
     _this.initiateOauth = _this.initiateOauth.bind(_this);
@@ -32438,7 +32439,8 @@ var App = function (_Component) {
         } else if (response.data.signin_url) {
           console.log("SIGNINURL IS: ", response.data.signin_url);
           _this2.setState({
-            oauthUrl: response.data.signin_url
+            oauthUrl: response.data.signin_url,
+            grabbedCapitalOneURL: true
           });
         }
       }).catch(function (err) {
@@ -32450,7 +32452,7 @@ var App = function (_Component) {
     value: function render() {
       var _this3 = this;
 
-      return this.state.authenticated === false ? _react2.default.createElement(
+      return this.state.grabbedCapitalOneURL === false ? _react2.default.createElement(
         'div',
         null,
         _react2.default.createElement(
@@ -32469,12 +32471,13 @@ var App = function (_Component) {
         'div',
         null,
         _react2.default.createElement(
-          'h1',
+          'button',
           null,
-          'Hello, ',
-          this.state.firstName,
-          ' ',
-          this.state.lastName
+          _react2.default.createElement(
+            'a',
+            { href: this.state.oauthUrl },
+            'Sigin With Capital One'
+          )
         )
       );
     }
